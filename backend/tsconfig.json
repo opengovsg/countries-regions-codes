@@ -1,0 +1,19 @@
+{
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "target": "es6",
+    "sourceMap": true,
+    "outDir": "./build",
+    "baseUrl": "./src",
+    "incremental": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

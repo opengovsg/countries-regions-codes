@@ -1,0 +1,18 @@
+FROM node:lts-alpine
+LABEL maintainer="Open Government Products"
+WORKDIR /usr/src/app
+RUN apk update && apk add python g++ make tini && rm -rf /var/cache/apk/*
+COPY . ./
+# Install backend dependencies
+RUN cd backend && npm ci && cd ..
+# Install frontend dependencies
+RUN cd frontend && npm ci && cd ..
+
+ENTRYPOINT ["tini", "--"]
+CMD ["npm", "run", "dev"]
+
+# Webpack dev server
+EXPOSE 3000
+
+# Backend API
+EXPOSE 8080
