@@ -21,21 +21,11 @@ lcov.info
 # nyc test coverage
 .nyc_output
 
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
-.grunt
-
-# Bower dependency directory (https://bower.io/)
-bower_components
-
-# node-waf configuration
-.lock-wscript
-
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
 # Dependency directories
 node_modules/
-jspm_packages/
 
 # TypeScript v1 declaration files
 typings/
@@ -66,8 +56,6 @@ typings/
 
 # Typescript build
 build
-backend/build
-frontend/build
 
-# JetBrains IDEs' settings
-.idea
+# Temporary file during publishing
+scripts/cached-package.json

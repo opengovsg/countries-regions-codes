@@ -1,0 +1,1 @@
+https://stackoverflow.com/questions/48802204/npm-publish-removing-scripts-from-package-json

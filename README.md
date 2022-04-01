@@ -1,76 +1,72 @@
-# TypeScript Project Files Template for OGP
+# Convert country/region codes
 
-## Folder Structure
-Two separate TypeScript projects, `frontend/` and `backend/`, 
-for frontend and backend respectively.
+![Coverage Status](https://coveralls.io/repos/github/opengovsg/countries-regions-codes/badge.svg?branch=develop&kill_cache=1)
 
-Structure within frontend/backend folder taken from \[1\]. Notably, 
-we distinguish between `lib/` and `src/` directories, the latter for
-files that we have to process (eg, transpile) into `build/` or `dist/`. 
+A utility for converting between country/region codes. We currently support 6 schemes:
+- `'name'` Plaintext English
+- `'icao'` International Civil Aviation Organization
+- `'iso2'` ISO 3166-1 alpha-2 ([link](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+- `'iso3'` ISO 3166-1 alpha-3 ([link](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3))
+- `'flag'` Emojis 🇦🇪 🇪🇸 🇸🇬 🇲🇵 🇳🇱 
+- `'phone'` Prefixes for international dialing ([link](https://countrycode.org/))
 
-## Linting
-Done with ESLint, using the following rule configs:
-
-- `eslint:recommended` 
-- `plugin:prettier/recommended`
-
-Prettier is further configured using the rules in `.prettierrc.js`.
-
-VSCode users will have to add the following to their ESLint extension
-settings for linting to work in both `frontend/` and `backend/`:
-
-```json
-    "eslint.workingDirectories": [
-        "backend",
-        "frontend"
-    ],
+## Installation
+```
+npm install @opengovsg/countries-regions-codes
 ```
 
-### Additional rules
-Developers are free to add more ESLint rules that bring their project
-in-line with norms specific to their language or framework of choice,
-eg. typescript or React.
+## Usage
 
-## Conventional Commits
-Commit messages follow [conventional commits](https://conventionalcommits.org/).
-This is enforced by commitlint, when pushing to remote branch.
+`countries-regions-codes` provides a chained API:
 
-### Commitizen
-[Commitizen](https://github.com/commitizen/cz-cli) has been installed as a 
-convenience for writing conventional commit messages, via `npm run cz`.
-This may be removed to minimise project dependencies.
 
-## Commit Hooks
-Husky is used in tandem with:
+```ts
+import { convert } from '@opengovsg/countries-regions-codes'
 
-- lint-staged to ensure files are linted on commit
-- commitlint to ensure commits adhere to convention on push
+convert('SGP').from('icao').to('iso2') // 'SG'
+```
 
-The pre-push hook will interfere on initial push since commitlint
-uses the remote branch as the lower bound in the commit range to inspect,
-and there would be no remote branch. Bypass this the first time with
-`git push --no-verify`.
 
-## Continuous Integration
-Travis is commonly used in OGP. A `.travis.yml` config has been provided
-for convenience, which will run the following in order:
+Schemes don't always have 1-1 mappings. In such cases, we support many-to-one mappings as expected
 
-- unit-tests
-- linting
-- commit linting
+```ts
+// United States Minor Outlying Islands
+convert('UM').from('iso2').to('icao') // 'USA'
 
-Builds will fail if any of these tasks fail.
+// United States
+convert('US').from('iso2').to('icao') // 'USA'
+```
 
-## Miscellany
+and choose a sensible default for one-to-many mappings. Where ambiguous, we choose the territory with a larger population. The full list of alternates can be seen [here](https://github.com/opengovsg/countries-regions-codes/blob/develop/src/countries.ts)
 
-### Dependabot
-`.github/dependabot.yml` is in place so that npm dependencies will be 
-regularly updated.
+```ts
+convert('USA').from('icao').to('name') // 'United States'
+```
 
-### Gitpod
-A `.gitpod.yml` has been configured to run `npm install` for 
-Gitpod users creating workspaces from the repository.
 
-## References
+Where a scheme has no representation for an option provided by another scheme, we throw an error.
 
-\[1\]: https://gist.github.com/tracker1/59f2c13044315f88bee9
+```ts
+// Refugee (Status) exists in icao but not iso2
+convert('XXB').from('icao').to('iso2') // throws
+```
+
+
+Additionally, if you require the full enums, e.g. to use in a validator / to iterate over with your own logic, you can access them as a de-duped, sorted list:
+
+```ts
+import { schemes } from '@opengovsg/countries-regions-codes'
+
+console.log(schemes.icao) // ['AFG', 'ALB', 'AZM', ...]
+console.log(schemes.iso2) // ['AF', 'AL', 'AS', ...]
+```
+
+## Typings
+Array items in `schemes` and return type from `convert()` are strongly-typed thanks to type-narrowing. 
+
+```ts
+const possiblePhonePrefix: string = '+66'
+const wellTypedIso3 = convert(possiblePhonePrefix).from('phone').to('iso3')
+
+// TS complains - wellTypedIso3 is known to be 'AFG' | 'ALB' | 'AZM' ...
+if (wellTypedIso3 === 'Thailand') 
